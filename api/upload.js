@@ -9,7 +9,10 @@ export default function handler(req, res) {
 
   let id = Date.now();
 
-  scripts[id] = code;
+  // mini ofuscação
+  let encoded = Buffer.from(code).toString("base64");
+
+  scripts[id] = encoded;
 
   let link = `https://${req.headers.host}/api/raw?id=${id}`;
 
