@@ -1,21 +1,31 @@
-export default function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).end();
-  }
-
-  globalThis.scripts = globalThis.scripts || {};
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).end();
 
   let { code } = req.body;
 
-  let id = Date.now().toString();
+  let fileName = `script_${Date.now()}.lua`;
 
-  let encoded = Buffer.from(code).toString("base64");
+  // ⚠️ COLOCA SEU USER AQUI
+  let user = "SEUUSER";
 
-  globalThis.scripts[id] = encoded;
+  // ⚠️ COLOCA SEU TOKEN AQUI
+  let token = "SEU_TOKEN";
 
-  let link = `https://${req.headers.host}/api/raw?id=${id}`;
+  await fetch(`https://api.github.com/repos/${user}/script-protector/contents/${fileName}`, {
+    method: "PUT",
+    headers: {
+      "Authorization": `token ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: "novo script",
+      content: Buffer.from(code).toString("base64")
+    })
+  });
+
+  let raw = `https://raw.githubusercontent.com/${user}/script-protector/main/${fileName}`;
 
   res.json({
-    loadstring: `loadstring(game:HttpGet("${link}"))()`
+    loadstring: `loadstring(game:HttpGet("${raw}"))()`
   });
 }
